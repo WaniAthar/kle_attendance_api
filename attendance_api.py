@@ -61,6 +61,7 @@ def get_data(username, password):
     for i in range(len(course_codes)):
         attendance_data.append({
             "course_name": course_name[i].text,
+            "course_code": course_codes[i].text,
             "course_teacher": course_teacher[i].text.replace("  ", " "),
             "course_attendance": course_attendance[i].text.replace("Attendance", "").replace("\n", "")
         })
