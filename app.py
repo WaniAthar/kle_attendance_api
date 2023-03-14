@@ -3,6 +3,10 @@ import attendance_api
 
 app = Flask(__name__)
 
+@app.route("/")
+def handleHome():
+    return jsonify({"page":"home"})
+
 @app.route("/personal/username=<username>_and_password=<password>")
 def handlePersonalData(username, password):
     # check the validity of the username and password
