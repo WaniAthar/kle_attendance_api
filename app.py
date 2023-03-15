@@ -16,7 +16,7 @@ def handlePersonalData(username, password):
     if(len(password) != 10):
         return jsonify({"error": "Invalid password"})
     try:
-        _, personal_info = attendance_api.get_data(username, password)
+        _, personal_info = jsonify(attendance_api.get_data(username, password))
         return jsonify(personal_info)
     except:
         return jsonify({"error": "Invalid username or password"})
@@ -30,7 +30,7 @@ def handleAttendanceData(username, password):
     if(len(password) != 10):
         return jsonify({"error": "Invalid password"})
     try:
-        attendance_info, _ = attendance_api.get_data(username, password)
+        attendance_info, _ = jsonify(attendance_api.get_data(username, password))
         return attendance_info
     except:
         return jsonify({"error": "Invalid username or password"})
