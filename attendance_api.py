@@ -58,11 +58,14 @@ def get_data(username, password):
         'div', {'class': 'tname'})]
     course_attendance = [div for div in dashboard_soup.find_all('div', {
         'class': 'att'})]
+    course_cie = [div for div in dashboard_soup.find_all('div', {
+        'class': 'cie'})]
     for i in range(len(course_codes)):
         attendance_data.append({
             "course_name": course_name[i].text,
             "course_code": course_codes[i].text,
             "course_teacher": course_teacher[i].text.replace("  ", " "),
-            "course_attendance": course_attendance[i].text.replace("Attendance", "").replace("\n", "")
+            "course_attendance": course_attendance[i].text.replace("Attendance", "").replace("\n", ""),
+            "cie_marks": course_cie[i].text.replace("CIE", "").replace("\n", "")
         })
     return attendance_data, personal_data
