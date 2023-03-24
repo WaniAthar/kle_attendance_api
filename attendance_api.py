@@ -66,6 +66,6 @@ def get_data(username, password):
             "course_code": course_codes[i].text,
             "course_teacher": course_teacher[i].text.replace("  ", " "),
             "course_attendance": course_attendance[i].text.replace("Attendance", "").replace("\n", ""),
-            "cie_marks": course_cie[i].text.replace("Internal Assessment", "").replace("\n", "")
+            "cie_marks": course_cie[i][0]
         })
     return attendance_data, personal_data
