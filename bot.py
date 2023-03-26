@@ -2,7 +2,6 @@ import os
 import telebot
 from dotenv import dotenv_values
 import requests
-from prettytable import PrettyTable
 
 
 BOT_TOKEN = dotenv_values(".env")["BOT_TOKEN"]
