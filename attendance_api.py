@@ -1,10 +1,11 @@
 import requests
+import asyncio
 from bs4 import BeautifulSoup
 
 # Define the login credentials
 # username = '01FE20BCS054'
 # password = '2002-04-01'
-def get_data(username, password):
+async def get_data(username, password):
     personal_data = {}
     attendance_data = []
 
