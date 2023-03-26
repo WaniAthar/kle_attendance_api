@@ -2,6 +2,8 @@ import os
 import telebot
 from dotenv import dotenv_values
 import requests
+from prettytable import PrettyTable
+
 
 BOT_TOKEN = dotenv_values(".env")["BOT_TOKEN"]
 
@@ -12,7 +14,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 def send_welcome(message):
     bot.reply_to(
         message,
-        "Attendd for KLE Tech\nHowdy, how are you doing?\nTo get your attendance and CIE marks, \n\n_Type your USN followed by space and then Date of Birth (DD-MM-YYYY):_\n\n_Example:_\n_01fe20bcs500 23-01-2002_",
+        "Attendd for KLE Tech\n\nHowdy, how are you doing?\nTo get your attendance and CIE marks, \n\nType your USN followed by space and Date of Birth (DD-MM-YYYY):\n\nExample:\n01fe20bcs500 23-01-2002",
     )
 
 
@@ -31,9 +33,12 @@ def echo_all(message):
     response = "Here is your data: \n"
     # Add rows
     for i in reply:
-        response += f"""\n**Course Code**: {i["course_code"]}\n**Course Name**: {i["course_name"]}\n**Attendance**: {i["course_attendance"]}\n**CIE**: {i["cie_marks"]}\n"""
-    response += "\n\n_To get updated details,_ \n_Type your USN followed by space and then Date of Birth (DD-MM-YYYY):_\n\n_Example:_\n_01fe20bcs500 23-01-2002_"
-    bot.reply_to(message, str(response))
+        response += f"""\nCourse Code: {i["course_code"]}\n,
+                    Course Name: {i["course_name"]}\n,
+                    Attendance: {i["course_attendance"]}\n,
+                    CIE: {i["cie_marks"]}\n\n"""
+    response += "\n\nTo get updated details, \nType your USN followed by space and Date of Birth (DD-MM-YYYY):\n\nExample:\n01fe20bcs500 23-01-2002"
+    bot.reply_to(message, str(reply))
 
 
 bot.infinity_polling()
