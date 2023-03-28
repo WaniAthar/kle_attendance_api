@@ -4,35 +4,51 @@ import aiohttp
 
 app = Flask(__name__)
 
+personal_info = None
+attendance_info = None
+
 @app.route("/personal/username=<username>_and_password=<password>")
 async def handlePersonalData(username, password):
+    global personal_info
+    global attendance_info
     # check the validity of the username and password
     print(username, password)
-    if(len(username) != 12):
+    if len(username) != 12:
         return jsonify({"error": "Invalid username"})
-    if(len(password) != 10):
+    if len(password) != 10:
         return jsonify({"error": "Invalid password"})
     try:
-        _, personal_info = await attendance_api.get_data(username, password)
+        if personal_info is not None and attendance_info is not None:
+            return jsonify(personal_info)
+        attendance_info, personal_info = await attendance_api.get_data(username, password)
         return jsonify(personal_info)
     except Exception as e:
         print(e)
-        return jsonify({"error": "an error occured"})
+        if personal_info is None or attendance_info is None:
+            return jsonify({"error": "Invalid USN or DOB"})
+        else:
+            return jsonify(personal_info)
 
 @app.route("/attendance/username=<username>_and_password=<password>")
 async def handleAttendanceData(username, password):
-    print(type(username), type(password))
+    global attendance_info
+    global personal_info
     # check the validity of the username and password
-    if(len(username) != 12):
+    if len(username) != 12:
         return jsonify({"error": "Invalid username"})
-    if(len(password) != 10):
+    if len(password) != 10:
         return jsonify({"error": "Invalid password"})
     try:
-        attendance_info, _ = await attendance_api.get_data(username, password)
+        if personal_info is not None and attendance_info is not None:
+            return jsonify(attendance_info)
+        attendance_info, personal_info = await attendance_api.get_data(username, password)
         return jsonify(attendance_info)
     except Exception as e:
         print(e)
-        return jsonify({"error": "An error occured"})
+        if personal_info is None or attendance_info is None:
+            return jsonify({"error": "Invalid USN or DOB"})
+        else:
+            return jsonify(attendance_info)
     
 if __name__ == "__main__":
     app.run()
