@@ -1,5 +1,4 @@
 import requests
-import asyncio
 from bs4 import BeautifulSoup
 
 # Define the login credentials
