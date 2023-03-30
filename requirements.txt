@@ -1,4 +1,5 @@
 Flask==2.2.3
+flask_caching
 asgiref
 flask[async]
 aioflask
