@@ -16,3 +16,4 @@ aiohttp==3.8.4
 asyncio
 pyTelegramBotAPI==4.10.0
 python-dotenv==0.21.1
+gevent==21.12.0
