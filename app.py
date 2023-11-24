@@ -1,9 +1,16 @@
+import threading
+import time
 from flask import Flask, jsonify, request
 from flask_caching import Cache
+import requests
 import attendance_api
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+shutdown_event = threading.Event()
+
+def run_server():
+    app.run()
 
 # Add route_name as an argument to the make_cache_key function
 def make_cache_key(route_name, username, password):
@@ -31,7 +38,7 @@ async def handlePersonalData(username, password):
         return jsonify(personal_info)
     except Exception as e:
         print(e)
-        return jsonify({"error": "Invalid USN or DOB"})
+        return jsonify({"error": "{e}"})
 
 @app.route("/attendance/username=<username>_and_password=<password>")
 async def handleAttendanceData(username, password):
@@ -57,5 +64,32 @@ async def handleAttendanceData(username, password):
         print(e)
         return jsonify({"error": "Invalid USN or DOB"})
 
+@app.route("/uptime")
+async def uptime():
+    return jsonify({"server status":"up"})
+
+def check_server_status():
+    while True:
+        time.sleep(6)  # Adjust the interval as needed
+        try:
+            response = requests.get("http://waniathar.onrender.com/uptime")
+            if response.status_code == 200:
+                print("Server is up!")
+            else:
+                print(f"Error: {response.status_code}")
+        except Exception as e:
+            print(f"Error: {e}")
+
 if __name__ == "__main__":
-    app.run()
+    server_thread = threading.Thread(target=run_server)
+    server_thread.start()
+
+    # Run the background thread to check server status
+    check_status_thread = threading.Thread(target=check_server_status)
+    check_status_thread.start()
+    server_thread.join()
+
+    # Set the shutdown event to signal the background thread to exit
+    shutdown_event.set()
+    # Wait for the background thread to finish
+    check_status_thread.join()
