@@ -1,23 +1,18 @@
-import threading
-import time
 from flask import Flask, jsonify, request
 from flask_caching import Cache
-import requests
 import attendance_api
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-shutdown_event = threading.Event()
 
-def run_server():
-    app.run()
+
 
 # Add route_name as an argument to the make_cache_key function
 def make_cache_key(route_name, username, password):
     return f"{route_name}:{username}:{password}"
 
 @app.route("/personal/username=<username>_and_password=<password>")
-async def handlePersonalData(username, password):
+def handlePersonalData(username, password):
     # Get the name of the endpoint function
     route_name = request.endpoint.split('.')[-1]
     # Use the endpoint function name to generate a unique cache key
@@ -32,7 +27,7 @@ async def handlePersonalData(username, password):
     if (len(password) != 10):
         return jsonify({"error": "Invalid password"})
     try:
-        _, personal_info = await attendance_api.get_data(username, password)
+        _, personal_info, _ = attendance_api.get_data(username, password)
         # Store the fetched personal data in the cache using the cache key
         cache.set(cache_key, personal_info, timeout=300)
         return jsonify(personal_info)
@@ -41,7 +36,7 @@ async def handlePersonalData(username, password):
         return jsonify({"error": "{e}"})
 
 @app.route("/attendance/username=<username>_and_password=<password>")
-async def handleAttendanceData(username, password):
+def handleAttendanceData(username, password):
     # Get the name of the endpoint function
     route_name = request.endpoint.split('.')[-1]
     # Use the endpoint function name to generate a unique cache key
@@ -56,7 +51,7 @@ async def handleAttendanceData(username, password):
     if (len(password) != 10):
         return jsonify({"error": "Invalid password"})
     try:
-        attendance_info, _ = await attendance_api.get_data(username, password)
+        attendance_info, _, _ = attendance_api.get_data(username, password)
         # Store the fetched attendance data in the cache using the cache key
         cache.set(cache_key, attendance_info, timeout=300)
         return jsonify(attendance_info)
@@ -64,32 +59,24 @@ async def handleAttendanceData(username, password):
         print(e)
         return jsonify({"error": "Invalid USN or DOB"})
 
-@app.route("/uptime")
-async def uptime():
-    return jsonify({"server status":"up"})
-
-def check_server_status():
-    while True:
-        time.sleep(6)  # Adjust the interval as needed
-        try:
-            response = requests.get("http://waniathar.onrender.com/uptime")
-            if response.status_code == 200:
-                print("Server is up!")
-            else:
-                print(f"Error: {response.status_code}")
-        except Exception as e:
-            print(f"Error: {e}")
-
+@app.route("/coe/username=<username>_and_password=<password>")
+async def handleCoe(username, password):
+    route_name = request.endpoint.split('.')[-1]
+    cache_key = make_cache_key(route_name, username, password)
+    coe_data = cache.get(cache_key)
+    if coe_data is not None:
+        return coe_data
+    if (len(username) != 12):
+        return jsonify({"error": "Invalid username"})
+    if (len(password) != 10):
+        return jsonify({"error": "Invalid password"})
+    try:
+        _, _, coe = attendance_api.get_data(username, password)
+        # Store the fetched attendance data in the cache using the cache key
+        cache.set(cache_key, coe['coe'], timeout=300)
+        return coe['coe']
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Invalid USN or DOB"})
 if __name__ == "__main__":
-    server_thread = threading.Thread(target=run_server)
-    server_thread.start()
-
-    # Run the background thread to check server status
-    check_status_thread = threading.Thread(target=check_server_status)
-    check_status_thread.start()
-    server_thread.join()
-
-    # Set the shutdown event to signal the background thread to exit
-    shutdown_event.set()
-    # Wait for the background thread to finish
-    check_status_thread.join()
+    app.run()
