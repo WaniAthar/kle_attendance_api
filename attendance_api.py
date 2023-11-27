@@ -40,6 +40,7 @@ def get_data(username, password):
     coe_page = session.get(coe_url)
     coe_soup = BeautifulSoup(coe_page.content, 'html.parser')
     coe_table = coe_soup.find_all('table')
+    coe_soup.find('style').extract()
 
     for i in range(3):
         coe_table[i].extract()
