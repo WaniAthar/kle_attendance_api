@@ -1,82 +1,64 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_caching import Cache
 import attendance_api
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
-
-
-# Add route_name as an argument to the make_cache_key function
 def make_cache_key(route_name, username, password):
     return f"{route_name}:{username}:{password}"
 
-@app.route("/personal/username=<username>_and_password=<password>")
-def handlePersonalData(username, password):
-    # Get the name of the endpoint function
+@app.route("/api/student_data", methods=['POST'])
+def getStudentData():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
     route_name = request.endpoint.split('.')[-1]
-    # Use the endpoint function name to generate a unique cache key
     cache_key = make_cache_key(route_name, username, password)
-    # Get the cached personal data using the cache key
-    personal_data = cache.get(cache_key)
-    if personal_data is not None:
-        return jsonify(personal_data)
-    # If the personal data is not in the cache, fetch it from the API
-    if (len(username) != 12):
-        return jsonify({"error": "Invalid username"})
-    if (len(password) != 10):
-        return jsonify({"error": "Invalid password"})
+    student_data = cache.get(cache_key)
+    if student_data is not None:
+        return jsonify(student_data)
+
+    if len(username) != 12 or len(password) != 10:
+        return jsonify({"error": "Invalid username or password"}), 400
+
     try:
-        _, personal_info, _ = attendance_api.get_data(username, password)
-        # Store the fetched personal data in the cache using the cache key
-        cache.set(cache_key, personal_info, timeout=300)
-        return jsonify(personal_info)
+        student_data = attendance_api.fetch_student_data(username, password)
+        cache.set(cache_key, student_data, timeout=300)
+        return jsonify(student_data)
     except Exception as e:
         print(e)
-        return jsonify({"error": "{e}"})
+        return jsonify({"error": str(e)}), 500 
 
-@app.route("/attendance/username=<username>_and_password=<password>")
-def handleAttendanceData(username, password):
-    # Get the name of the endpoint function
-    route_name = request.endpoint.split('.')[-1]
-    # Use the endpoint function name to generate a unique cache key
-    cache_key = make_cache_key(route_name, username, password)
-    # Get the cached attendance data using the cache key
-    attendance_data = cache.get(cache_key)
-    if attendance_data is not None:
-        return jsonify(attendance_data)
-    # If the attendance data is not in the cache, fetch it from the API
-    if (len(username) != 12):
-        return jsonify({"error": "Invalid username"})
-    if (len(password) != 10):
-        return jsonify({"error": "Invalid password"})
-    try:
-        attendance_info, _, _ = attendance_api.get_data(username, password)
-        # Store the fetched attendance data in the cache using the cache key
-        cache.set(cache_key, attendance_info, timeout=300)
-        return jsonify(attendance_info)
-    except Exception as e:
-        print(e)
-        return jsonify({"error": "Invalid USN or DOB"})
+@app.route("/api/coe", methods=['POST'])
+def handleCoe():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
 
-@app.route("/coe/username=<username>_and_password=<password>")
-async def handleCoe(username, password):
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
     route_name = request.endpoint.split('.')[-1]
     cache_key = make_cache_key(route_name, username, password)
     coe_data = cache.get(cache_key)
     if coe_data is not None:
-        return coe_data
-    if (len(username) != 12):
-        return jsonify({"error": "Invalid username"})
-    if (len(password) != 10):
-        return jsonify({"error": "Invalid password"})
+        return jsonify(coe_data)
+
+    if len(username) != 12 or len(password) != 10:
+        return jsonify({"error": "Invalid username or password"}), 400
+
     try:
-        _, _, coe = attendance_api.get_data(username, password)
-        # Store the fetched attendance data in the cache using the cache key
+        coe = attendance_api.fetch_calendar_of_events(username, password)
         cache.set(cache_key, coe['coe'], timeout=300)
-        return coe['coe']
+        return jsonify(coe['coe'])
     except Exception as e:
         print(e)
-        return jsonify({"error": "Invalid USN or DOB"})
+        return jsonify({"error": "Invalid USN or DOB"}), 500
+
 if __name__ == "__main__":
     app.run()
