@@ -25,12 +25,12 @@ def fetch_student_data(username, password):
     dashboard_url = f'{base_url}index.php?option=com_studentdashboard&controller=studentdashboard&task=dashboard'
     dashboard_page = session.get(dashboard_url)
     dashboard_soup = BeautifulSoup(dashboard_page.content, 'html.parser')
-
+    print(dashboard_soup)
     personal_keys = ["name", "usn", "semester", "credits_earned", "credits_to_earn"]
     personal_values = [div.text.strip().replace("Credits Earned : ", "").replace("Credits to Earn : ", "") 
                        for div in dashboard_soup.find_all('div', {'class': 'tname2'})]
     personal_data = dict(zip(personal_keys, personal_values))
-
+    print(personal_data)
     # Fetching Attendance Data
     course_codes = [div.text for div in dashboard_soup.find_all('div', {'class': 'courseCode'})]
     course_names = [div.text for div in dashboard_soup.find_all('div', {'class': 'coursename'})]
@@ -38,13 +38,20 @@ def fetch_student_data(username, password):
     course_attendances = [div.text.strip().replace("Attendance", "").replace("\n", "") for div in dashboard_soup.find_all('div', {'class': 'att'})]
     course_cie_marks = [div.text.strip().replace("Internal Assessment", "").replace("\n", "") for div in dashboard_soup.find_all('div', {'class': 'cie'})]
 
-    attendance_data = [{
-            "course_name": course_names[i],
-            "course_code": course_codes[i],
-            "course_teacher": course_teachers[i],
-            "course_attendance": course_attendances[i],
-            "cie_marks": course_cie_marks[i]
-        } for i in range(len(course_codes))]
+    
+    attendance_data = []
+    j = 0
+    for i in range(len(course_names)):
+            if i == 0 or course_names[i] != course_names[i-1]:
+                attendance_data.append({
+                    "course_name": course_names[i],
+                    "course_code": course_codes[i],
+                    "course_teacher": course_teachers[j],
+                    "course_attendance": course_attendances[i],
+                    "cie_marks": course_cie_marks[i]
+                })
+                j+=1
+
 
     # Merging and returning the data
     return {
