@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 def fetch_student_data(username, password):
     chrome_options = Options()
     chrome_options.use_chromium = True
-    # chrome_options.add_argument('--headless')  # Add this line for headless mode
+    chrome_options.add_argument('--headless=new')  # Add this line for headless mode
     chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
     chrome_options.add_argument('--ignore-certificate-errors')
     # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
@@ -114,7 +114,7 @@ def fetch_student_data(username, password):
 
 
     # Close the browser
-    # driver.quit()
+    driver.quit()
 
     print(personal_data)
     print(attendance_data)
@@ -128,9 +128,9 @@ def fetch_student_data(username, password):
 def fetch_calendar_of_events(username, password):
     chrome_options = Options()
     chrome_options.use_chromium = True
-    chrome_options.add_argument('--headless')  # Add this line for headless mode
+    chrome_options.add_argument('--headless=new')  # Add this line for headless mode
     chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
-    chrome_options.add_argument('--ignore-certificate-errors')
+    # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
 
     login_url = 'https://student.kletech.ac.in/code/'
     # Create a Chrome WebDriver instance with the specified options and service
@@ -212,7 +212,7 @@ def fetch_calendar_of_events(username, password):
     table_form.find_next('div').extract()
     table_form.find_next('div').extract()
     coe = repr(coe_soup).replace("\n", "").replace("\t", "").replace("\r", "")
-    # driver.quit()
+    driver.quit()
     
     coe = {"coe":coe}
     return coe
@@ -220,4 +220,4 @@ def fetch_calendar_of_events(username, password):
 # Replace with your actual credentials
 # fetch_student_data("01fe02bcs054", "2002-04-01")
 fetch_student_data('01fe20bcs054', '2002-04-01')
-# print(fetch_calendar_of_events('01fe20bcs054', '2002-04-01'))
+print(fetch_calendar_of_events('01fe20bcs054', '2002-04-01'))
