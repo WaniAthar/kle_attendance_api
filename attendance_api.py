@@ -17,12 +17,13 @@ def fetch_student_data(username, password):
         chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
         chrome_options.add_argument('--ignore-certificate-errors')
         chrome_options.add_argument('--no-sandbox')
+        chrome_service = Service(service_log_path='chromedriver.log')
 
         # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
 
         login_url = 'https://student.kletech.ac.in/code/'
         # Create a Chrome WebDriver instance with the specified options and service
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options,service=chrome_service)
 
         driver.get(login_url)
 
@@ -136,11 +137,12 @@ def fetch_calendar_of_events(username, password):
         chrome_options.headless = True  # Add this line for headless mode
         chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
         chrome_options.add_argument('--no-sandbox')
+        chrome_service = Service(service_log_path='chromedriver.log')
         # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
 
         login_url = 'https://student.kletech.ac.in/code/'
         # Create a Chrome WebDriver instance with the specified options and service
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options, service=chrome_service)
 
         driver.get(login_url)
 
