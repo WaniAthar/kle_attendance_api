@@ -17,5 +17,5 @@ asyncio
 pyTelegramBotAPI==4.10.0
 python-dotenv==0.21.1
 gevent==21.12.0
-pytesseract
 webdriver_manager
+pyvirtualdisplay
