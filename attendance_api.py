@@ -11,9 +11,11 @@ from bs4 import BeautifulSoup
 def fetch_student_data(username, password):
     chrome_options = Options()
     chrome_options.use_chromium = True
-    chrome_options.add_argument('--headless=new')  # Add this line for headless mode
+    chrome_options.headless = True  # Add this line for headless mode
     chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
     chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--no-sandbox')
+
     # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
 
     login_url = 'https://student.kletech.ac.in/code/'
@@ -51,7 +53,7 @@ def fetch_student_data(username, password):
     }
     
     # Extract form data
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 30)
     username_field = wait.until(EC.presence_of_element_located((By.ID, 'username')))
     dd_field = wait.until(EC.presence_of_element_located((By.ID, 'dd')))
     mm_field = wait.until(EC.presence_of_element_located((By.ID, 'mm')))
@@ -70,7 +72,7 @@ def fetch_student_data(username, password):
     # Wait for the login to complete
     try:
         element_present = EC.presence_of_element_located((By.ID, 'page_bg'))
-        WebDriverWait(driver, 10).until(element_present)
+        WebDriverWait(driver, 30).until(element_present)
     except TimeoutException:
         print("Timed out waiting for dashboard page to load")
 
@@ -81,7 +83,7 @@ def fetch_student_data(username, password):
     driver.get(dashboard_url)
     try:
         element_present = EC.presence_of_element_located((By.ID, 'page-header'))
-        WebDriverWait(driver, 10).until(element_present)
+        WebDriverWait(driver, 30).until(element_present)
     except TimeoutException:
         print("Timed out waiting for dashboard page to load")
     dashboard_soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -128,8 +130,9 @@ def fetch_student_data(username, password):
 def fetch_calendar_of_events(username, password):
     chrome_options = Options()
     chrome_options.use_chromium = True
-    chrome_options.add_argument('--headless=new')  # Add this line for headless mode
+    chrome_options.headless = True  # Add this line for headless mode
     chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
+    chrome_options.add_argument('--no-sandbox')
     # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
 
     login_url = 'https://student.kletech.ac.in/code/'
@@ -175,7 +178,7 @@ def fetch_calendar_of_events(username, password):
     # Wait for the login to complete
     try:
         element_present = EC.presence_of_element_located((By.ID, 'page_bg'))
-        WebDriverWait(driver, 10).until(element_present)
+        WebDriverWait(driver, 30).until(element_present)
     except TimeoutException:
         print("Timed out waiting for dashboard page to load")
 
@@ -183,7 +186,7 @@ def fetch_calendar_of_events(username, password):
     driver.get(dashboard_url)
     try:
         element_present = EC.presence_of_element_located((By.ID, 'page-header'))
-        WebDriverWait(driver, 10).until(element_present)
+        WebDriverWait(driver, 30).until(element_present)
     except TimeoutException:
         print("Timed out waiting for dashboard page to load")
     
@@ -193,7 +196,7 @@ def fetch_calendar_of_events(username, password):
     # Wait for the dashboard page to load
     try:
         element_present = EC.presence_of_element_located((By.ID, 'page-header'))
-        WebDriverWait(driver, 10).until(element_present)
+        WebDriverWait(driver, 30).until(element_present)
     except TimeoutException:
         print("Timed out waiting for dashboard page to load")
     coe_soup = BeautifulSoup(driver.page_source, 'html.parser')
