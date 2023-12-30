@@ -19,3 +19,4 @@ python-dotenv==0.21.1
 gevent==21.12.0
 webdriver_manager
 pyvirtualdisplay
+selenium
