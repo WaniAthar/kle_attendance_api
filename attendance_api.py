@@ -1,31 +1,91 @@
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
 from bs4 import BeautifulSoup
 
-# Define the base URL
-base_url = 'https://student.kletech.ac.in/code/'
-# Function to start a session and login
-def login(username, password):
-    session = requests.Session()
-    login_page = session.get(base_url)
-    soup = BeautifulSoup(login_page.content, 'html.parser')
-    form = soup.find('form', {'id': 'login-form'})
-
-    form_data = {field['name']: field.get('value', '') for field in form.find_all('input') if field.get('name')}
-    form_data['username'] = username
-    form_data['passwd'] = password
-
-    session.post(base_url, data=form_data)
-    return session
-
-# Function to fetch personal data
 def fetch_student_data(username, password):
-    session = login(username, password)
+    chrome_options = Options()
+    chrome_options.use_chromium = True
+    # chrome_options.add_argument('--headless')  # Add this line for headless mode
+    chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
+    chrome_options.add_argument('--ignore-certificate-errors')
+    # chromedriver_path = '/path/to/chromedriver'  # Replace with your actual path to chromedriver
+
+    login_url = 'https://student.kletech.ac.in/code/'
+    # Create a Chrome WebDriver instance with the specified options and service
+    driver = webdriver.Chrome(options=chrome_options)
+
+    driver.get(login_url)
+
+    months = {
+         '01':'Jan',
+         '02':'Feb',
+         '03':'Mar',
+         '04':'Apr',
+         '05':'May',
+         '06':'Jun',
+         '07':'Jul',
+         '08':'Aug',
+         '09':'Sep',
+         '10':'Oct',
+         '11':'Nov',
+         '12':'Dec'
+    }
+    # split passwrord
+    passlist = password.split('-')
+    dd=passlist[2]
+    mm = months[passlist[1]]
+    yyyy = passlist[0]
+
+    # not works like this
+    login_payload = {
+        'username': username,
+        'dd': dd,
+        'mm': mm,
+        'yyyy': yyyy
+    }
+    
+    # Extract form data
+    wait = WebDriverWait(driver, 10)
+    username_field = wait.until(EC.presence_of_element_located((By.ID, 'username')))
+    dd_field = wait.until(EC.presence_of_element_located((By.ID, 'dd')))
+    mm_field = wait.until(EC.presence_of_element_located((By.ID, 'mm')))
+    yyyy_field = wait.until(EC.presence_of_element_located((By.ID, 'yyyy')))
+
+    # Enter data into fields
+    username_field.send_keys(login_payload['username'])
+    dd_field.send_keys(login_payload['dd'])
+    mm_field.send_keys(login_payload['mm'])
+    yyyy_field.send_keys(login_payload['yyyy'])
+
+    submit_button = wait.until(EC.element_to_be_clickable((By.NAME, 'submit')))
+    submit_button.click()
+
+
+    # Wait for the login to complete
+    try:
+        element_present = EC.presence_of_element_located((By.ID, 'page_bg'))
+        WebDriverWait(driver, 10).until(element_present)
+    except TimeoutException:
+        print("Timed out waiting for dashboard page to load")
+
     
     # Fetching Personal Data
-    dashboard_url = f'{base_url}index.php?option=com_studentdashboard&controller=studentdashboard&task=dashboard'
-    dashboard_page = session.get(dashboard_url)
-    dashboard_soup = BeautifulSoup(dashboard_page.content, 'html.parser')
-    print(dashboard_soup)
+    dashboard_url = 'https://student.kletech.ac.in/code/index.php?option=com_studentdashboard&controller=studentdashboard&task=dashboard'
+    # Wait for the dashboard page to load
+    driver.get(dashboard_url)
+    try:
+        element_present = EC.presence_of_element_located((By.ID, 'page-header'))
+        WebDriverWait(driver, 10).until(element_present)
+    except TimeoutException:
+        print("Timed out waiting for dashboard page to load")
+    dashboard_soup = BeautifulSoup(driver.page_source, 'html.parser')
+
     personal_keys = ["name", "usn", "semester", "credits_earned", "credits_to_earn"]
     personal_values = [div.text.strip().replace("Credits Earned : ", "").replace("Credits to Earn : ", "") 
                        for div in dashboard_soup.find_all('div', {'class': 'tname2'})]
@@ -53,6 +113,11 @@ def fetch_student_data(username, password):
                 j+=1
 
 
+    # Close the browser
+    # driver.quit()
+
+    print(personal_data)
+    print(attendance_data)
     # Merging and returning the data
     return {
         "personal_data": personal_data,
@@ -60,16 +125,78 @@ def fetch_student_data(username, password):
     }
 
 
-
-# Function to fetch calendar of events data
 def fetch_calendar_of_events(username, password):
-    session = login(username, password)
-    dashboard_url = f'{base_url}index.php?option=com_studentdashboard&controller=studentdashboard&task=dashboard'
-    dashboard_page = session.get(dashboard_url)
-    dashboard_soup = BeautifulSoup(dashboard_page.content, 'html.parser')
-    coe_url = base_url+dashboard_soup.find("div", class_="atag").find("a", class_="atagblock").get("href")
-    coe_page = session.get(coe_url)
-    coe_soup = BeautifulSoup(coe_page.content, 'html.parser')
+    chrome_options = Options()
+    chrome_options.use_chromium = True
+    chrome_options.add_argument('--headless')  # Add this line for headless mode
+    chrome_options.add_argument('--disable-gpu')  # Add this line for headless mode
+    chrome_options.add_argument('--ignore-certificate-errors')
+
+    login_url = 'https://student.kletech.ac.in/code/'
+    # Create a Chrome WebDriver instance with the specified options and service
+    driver = webdriver.Chrome(options=chrome_options)
+
+    driver.get(login_url)
+
+    months = {
+         '01':'Jan',
+         '02':'Feb',
+         '03':'Mar',
+         '04':'Apr',
+         '05':'May',
+         '06':'Jun',
+         '07':'Jul',
+         '08':'Aug',
+         '09':'Sep',
+         '10':'Oct',
+         '11':'Nov',
+         '12':'Dec'
+    }
+    # split passwrord
+    passlist = password.split('-')
+    login_payload = {
+        'username': username,
+        'dd': passlist[2],
+        'mm': months[passlist[1]],
+        'yyyy': passlist[0]
+    }
+
+    # Extract form data
+    driver.find_element(By.ID, 'username').send_keys(login_payload['username'])
+    driver.find_element(By.ID, 'dd').send_keys(login_payload['dd'])
+    driver.find_element(By.ID, 'mm').send_keys(login_payload['mm'])
+    driver.find_element(By.ID, 'yyyy').send_keys(login_payload['yyyy'])
+    
+    
+    submit_button = driver.find_element("name", "submit")
+    submit_button.click()
+
+
+    # Wait for the login to complete
+    try:
+        element_present = EC.presence_of_element_located((By.ID, 'page_bg'))
+        WebDriverWait(driver, 10).until(element_present)
+    except TimeoutException:
+        print("Timed out waiting for dashboard page to load")
+
+    dashboard_url = 'https://student.kletech.ac.in/code/index.php?option=com_studentdashboard&controller=studentdashboard&task=dashboard'
+    driver.get(dashboard_url)
+    try:
+        element_present = EC.presence_of_element_located((By.ID, 'page-header'))
+        WebDriverWait(driver, 10).until(element_present)
+    except TimeoutException:
+        print("Timed out waiting for dashboard page to load")
+    
+    dashboard_soup = BeautifulSoup(driver.page_source, 'html.parser')
+    coe_url = "https://student.kletech.ac.in/code/"+dashboard_soup.find("div", class_="atag").find("a", class_="atagblock").get("href")
+    driver.get(coe_url)
+    # Wait for the dashboard page to load
+    try:
+        element_present = EC.presence_of_element_located((By.ID, 'page-header'))
+        WebDriverWait(driver, 10).until(element_present)
+    except TimeoutException:
+        print("Timed out waiting for dashboard page to load")
+    coe_soup = BeautifulSoup(driver.page_source, 'html.parser')
     coe_table = coe_soup.find_all('table')
     coe_soup.find('style').extract()
 
@@ -85,7 +212,12 @@ def fetch_calendar_of_events(username, password):
     table_form.find_next('div').extract()
     table_form.find_next('div').extract()
     coe = repr(coe_soup).replace("\n", "").replace("\t", "").replace("\r", "")
+    # driver.quit()
     
     coe = {"coe":coe}
     return coe
 
+# Replace with your actual credentials
+# fetch_student_data("01fe02bcs054", "2002-04-01")
+fetch_student_data('01fe20bcs054', '2002-04-01')
+# print(fetch_calendar_of_events('01fe20bcs054', '2002-04-01'))
