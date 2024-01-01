@@ -225,8 +225,3 @@ def fetch_calendar_of_events(username, password):
         coe = {"coe":coe}
 
     return coe
-
-# Replace with your actual credentials
-# fetch_student_data("01fe02bcs054", "2002-04-01")
-fetch_student_data('01fe20bcs054', '2002-04-01')
-print(fetch_calendar_of_events('01fe20bcs054', '2002-04-01'))
