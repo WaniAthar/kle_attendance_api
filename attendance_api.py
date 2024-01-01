@@ -30,6 +30,8 @@ def fetch_student_data(username, password):
         driver = webdriver.Chrome(options=chrome_options,service=chrome_service)
 
         driver.get(login_url)
+        print(driver.page_source)
+
 
         months = {
             '01':'Jan',
@@ -152,6 +154,7 @@ def fetch_calendar_of_events(username, password):
         driver = webdriver.Chrome(options=chrome_options, service=chrome_service)
 
         driver.get(login_url)
+        print(driver.page_source)
 
         months = {
             '01':'Jan',
